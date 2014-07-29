@@ -1,0 +1,103 @@
+// dLGN interneuron model
+// Geir Halnes, Norwegian University of Life Sciences, June 2011
+
+//load_file("nrngui.hoc")
+//cvode_active(1)
+
+load_file("091008A2.hoc") // uses Heggelund morphoplogy
+objref inter_sl
+	inter_sl = new SectionList()
+	for(i=0; i<=104; i=i+1) dend[i] inter_sl.append()
+	forsec inter_sl print secname()
+
+xopen("fixnseg.hoc")
+objref stim, hold
+/*
+dt = 0.1
+celsius = 36.0  */
+actdends = 1
+
+load_file("Parameters1.hoc")
+//load_file("Parameters2.hoc")
+
+
+// Channel distribution (ratio: g_dend/g_soma_inter)
+nadendfac = 0.1
+ihdendfac = 1
+ldendfac = 0.25
+iahpdendfac = 0.1
+itinc = 2.39/60
+icaninc = itinc
+
+
+	
+// Insert channels:
+forsec inter_sl {
+	
+
+	insert pas e_pas=Vrest g_pas=1/Rm Ra=rall cm=cap}
+forsec inter_sl {
+	insert iar ghbar_iar=ghbar*ihdendfac
+	insert cad
+	insert ical
+	insert itGHK
+	insert iahp
+	insert hh2 ena=50 ek=-90
+	insert ican
+}
+soma_inter {
+	
+	insert iar ghbar_iar=ghbar*ihdendfac
+	insert cad
+	insert ical
+	insert itGHK
+	insert iahp
+	insert hh2 ena=50 ek=-90
+	insert ican
+}
+ 
+// Initialize
+proc init() {
+	access soma_inter
+      forsec inter_sl {
+      //print secname()
+      v=Vrest e_pas=Epas}
+      forsec inter_sl {
+      insert pas e_pas=Epas g_pas=1/Rm Ra=rall cm=cap}
+
+forsec inter_sl {
+	
+	gnabar_hh2 = gna*nadendfac  vtraubNa_hh2 = nash
+      gkbar_hh2 = 0.005 vtraubK_hh2 = kdrsh
+	pcabar_ical = gcal*ldendfac
+	gkbar_iahp = gahp*iahpdendfac
+	ghbar_iar = ghbar*ihdendfac
+	gcabar_it2 = gcat*(1 + itinc*distance(1))*actdends
+	gbar_ican = gcanbar*(1 + itinc*distance(1))*actdends
+}
+
+soma_inter {
+	gnabar_hh2 = gna vtraubNa_hh2 = nash 
+	gkbar_hh2 = gkdr vtraubK_hh2 = kdrsh
+	gcabar_it2 = gcat
+	pcabar_ical = gcal
+	gkbar_iahp = gahp
+	ghbar_iar = ghbar
+	gbar_ican = gcanbar
+}
+
+	finitialize(Vrest)
+      fcurrent()
+      forsec inter_sl {taur_Cad = catau} // Calcium decay needs to know the the volume it enters
+//	cvode.re_init()
+}
+
+access soma_inter
+freq=50
+geom_nseg()
+tot=0
+forsec inter_sl {tot=tot+nseg}
+distance()
+print "total # of segments (50Hz): ",tot
+
+

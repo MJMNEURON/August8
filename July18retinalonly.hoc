@@ -1,0 +1,433 @@
+
+load_file("nrngui.hoc")
+
+
+//----------------------------------------------------------------------------
+// retinal axon
+//----------------------------------------------------------------------------
+create retinal_axon
+//tc200_cc.oc
+retinal_axon {
+	insert pas
+	g_pas = 3.79e-5
+	e_pas = -76.5		// to fit current-clamp data (was -71 to -73)
+	cm = 0.88
+	Ra = 173
+
+	insert hh2		// insert fast spikes
+	ena = 50
+	ek = -100
+	vtraub_hh2 = -52
+	gnabar_hh2 = 0.01		// adapted to single-compartment
+	gkbar_hh2 = 0.01 		// adapted to single-compartment
+
+	insert itGHK		// T-current everywhere
+	cai = 2.4e-4 
+	cao = 2 
+	eca = 120 
+	shift_itGHK = -1	// screening charge shift + 3 mV error
+	gcabar_itGHK = 0.0002
+	pcabar_itGHK = 8e-5
+	qm_itGHK = 2.5
+	qh_itGHK = 2.5
+	
+	insert cad		// calcium diffusion everywhere
+	depth_cad = 0.1
+	kt_cad = 0		// no pump
+	kd_cad = 1e-4
+	taur_cad = 5
+	cainf_cad = 2.4e-4	
+}
+
+//----------------------------------------------------------------------------
+// relay cell topology
+//----------------------------------------------------------------------------
+xopen("cells/tc200.geo") // read geometry file
+xopen("loc200.oc") // load procedures for localizing T-current
+
+corrD = 1 // no dendritic surface correction
+G_pas = 3.79e-5
+E_pas = -73 // to fit current-clamp data (was -71 to -73)
+E_pas = -76.5 // within 3 mV error
+
+forall { // insert passive current everywhere
+insert pas
+g_pas = G_pas * corrD
+e_pas = E_pas
+cm = 0.88 * corrD
+Ra = 173
+L = L
+}
+
+soma {
+g_pas = G_pas
+cm = 0.88
+
+insert hh2 // insert fast spikes
+ena = 50
+ek = -100
+vtraub_hh2 = -52
+gnabar_hh2 = 0.1
+gkbar_hh2 = 0.1
+}
+
+
+forall {
+insert itGHK // T-current everywhere
+cai = 2.4e-4
+cao = 2
+eca = 120
+shift_itGHK = -1 // screening charge shift + 3 mV error
+gcabar_itGHK = corrD * 0.0002
+qm_itGHK = 2.5
+qh_itGHK = 2.5
+
+insert cad // calcium diffusion everywhere
+depth_cad = 0.1 * corrD
+kt_cad = 0 // no pump
+kd_cad = 1e-4
+taur_cad = 5
+cainf_cad = 2.4e-4
+}
+
+// uniform T-current with same density as in dissociated cells
+// localize(1.7e-5,corrD*1.7e-5,corrD*1.7e-5)
+
+// low density proximal, high distal, to match volt-clamp of intact cells
+localize(1.7e-5,corrD*8.5e-5,corrD*8.5e-5)
+
+
+objectvar rstim // insert current injection
+
+retinal_axon rstim = new IClamp(.5)
+rstim.del = 0
+rstim.dur = 1e9 // dur has to be infinite when used with vector playing 
+rstim.amp = 0
+
+objref fspikes, vecspikes, vecstim
+fspikes=new File()
+fspikes.ropen("contrast/cs4_01.dat")
+vecspikes=new Vector()
+vecstim = new Vector(4000,0)
+vecspikes.scanf(fspikes)
+for total=0, vecspikes.size()-1{
+    vecstim.x( int(vecspikes.x(total)*1000) ) = 4000
+}
+vecspikes.printf()
+vecstim.play( &rstim.amp, 1 )
+
+
+// Definition of the list of NetCon objects representing synapses to the retinal axon
+objectvar syn2retinal_axon
+syn2retinal_axon = new List()
+
+//----------------------------------------------------------------------------
+// retina -> relay AMPA 
+//----------------------------------------------------------------------------
+
+objectvar syn // won't be any different if using objref
+dend4[0] syn = new AMPA(0.5)
+
+Prethresh_AMPA = 0 // (mV) voltage level nec for release
+retinal_axon syn2retinal_axon.append( new NetCon(&v(0.5), syn, Prethresh_AMPA, 0, 0.2) )
+
+//----------------------------------------------------------------------------
+// cortex -> relay 
+//----------------------------------------------------------------------------
+/*
+nsyn=20
+objectvar syncortical, amount[nsyn], Cortexsource[nsyn], Esynapse[nsyn], conn[nsyn], vec, spikes
+syncortical=new List()
+
+for i=0, 3{ // parameters to fix
+	if(i<2) {
+		dend4[17] Cortexsource[i] = new NetStim(0.5)
+	} else{
+		dend4[18] Cortexsource[i] = new NetStim(0.5)
+	}
+	Cortexsource[i].interval=30
+	Cortexsource[i].number=80
+	Cortexsource[i].start=100
+	Cortexsource[i].noise=1
+}
+
+for i=4, 7{ // parameters to fix
+	if (i<6){
+		dend6[17] Cortexsource[i] = new NetStim(0.5)
+	} else{
+		dend6[18] Cortexsource[i] = new NetStim(0.5)
+	}
+	//dend6[i+15] Cortexsource[i] = new NetStim(0.5)
+	Cortexsource[i].interval=30
+	Cortexsource[i].number=80
+	Cortexsource[i].start=100
+	Cortexsource[i].noise=1
+}
+
+for i=8, 15{ // parameters to fix
+	if (i<10){
+		dend8[18] Cortexsource[i] = new NetStim(0.5)
+	} else if (10<=i<12){
+		dend8[19] Cortexsource[i] = new NetStim(0.5)
+	} else if (12<=i<14){
+		dend8[20] Cortexsource[i] = new NetStim(0.5)
+	} else if (14<=i<16){
+		dend8[21] Cortexsource[i] = new NetStim(0.5)
+	}
+	//dend8[i+14] Cortexsource[i] = new NetStim(0.5)
+	Cortexsource[i].interval=30
+	Cortexsource[i].number=80
+	Cortexsource[i].start=100
+	Cortexsource[i].noise=1
+}
+
+for i=16, 19{ // parameters to fix
+	if (i<18){
+		dend9[42] Cortexsource[i] = new NetStim(0.5)
+	} else{
+		dend9[43] Cortexsource[i] = new NetStim(0.5)
+	}
+	//dend9[i+34] Cortexsource[i] = new NetStim(0.5)
+	Cortexsource[i].interval=30
+	Cortexsource[i].number=80
+	Cortexsource[i].start=100
+	Cortexsource[i].noise=1
+}
+
+/* old paragraph
+for i=0, nsyn-1{ // parameters to fix
+	dend9[nsyn] Cortexsource[i] = new NetStim(0.5)
+	Cortexsource[i].interval=30
+	Cortexsource[i].number=80
+	Cortexsource[i].start=100
+	Cortexsource[i].noise=1
+}
+old paragraph */
+/*
+objref timevec, idvec, recncs, tobj
+timevec=new Vector()
+idvec=new Vector()
+recncs=new List()
+
+/* old paragraph
+for i=0, nsyn-1{
+	dend9[i] Esynapse[i] = new ExpSyn(0.5)
+	Esynapse[i].tau=0.5
+	Esynapse[i].e=0
+	conn[i]=new NetCon(Cortexsource[i], Esynapse[i], 10, 0, 0.1) //threshold, delay, weight
+	conn[i].record(timevec, idvec, i+1)
+	recncs.append(tobj)
+}
+old paragraph
+
+
+for i=0, 3{ // parameters to fix
+	if(i<2) {
+		dend4[17] Esynapse[i] = new ExpSyn(0.5)
+	} else{
+		dend4[18] Esynapse[i] = new ExpSyn(0.5)
+	}	
+	Esynapse[i].tau=0.5
+	Esynapse[i].e=0
+	conn[i]=new NetCon(Cortexsource[i], Esynapse[i], 10, 0, 0.1) //threshold, delay, weight
+	conn[i].record(timevec, idvec, i+1)
+	recncs.append(tobj)
+}
+for i=4, 7{
+	if(i<6) {
+		dend6[17] Esynapse[i] = new ExpSyn(0.5)
+	} else{
+		dend6[18] Esynapse[i] = new ExpSyn(0.5)
+	}	
+	Esynapse[i].tau=0.5
+	Esynapse[i].e=0
+	conn[i]=new NetCon(Cortexsource[i], Esynapse[i], 10, 0, 0.1) //threshold, delay, weight
+	conn[i].record(timevec, idvec, i+1)
+	recncs.append(tobj)
+}
+for i=8, 15{
+	if (i<10){
+		dend8[18] Esynapse[i] = new ExpSyn(0.5)
+	} else if (10<=i<12){
+		dend8[19] Esynapse[i] = new ExpSyn(0.5)
+	} else if (12<=i<14){
+		dend8[20] Esynapse[i] = new ExpSyn(0.5) 
+	} else if (14<=i<16){
+		dend8[21] Esynapse[i] = new ExpSyn(0.5)
+	}
+	Esynapse[i].tau=0.5
+	Esynapse[i].e=0
+	conn[i]=new NetCon(Cortexsource[i], Esynapse[i], 10, 0, 0.1) //threshold, delay, weight
+	conn[i].record(timevec, idvec, i+1)
+	recncs.append(tobj)
+}
+for i=16, 19{
+	if (i<18){
+		dend9[42] Esynapse[i] = new ExpSyn(0.5)
+	} else{
+		dend9[43] Esynapse[i] = new ExpSyn(0.5)
+	}
+	Esynapse[i].tau=0.5
+	Esynapse[i].e=0
+	conn[i]=new NetCon(Cortexsource[i], Esynapse[i], 10, 0, 0.1) //threshold, delay, weight
+	conn[i].record(timevec, idvec, i+1)
+	recncs.append(tobj)
+}
+
+objref tobj
+
+objref ggraph
+proc plotraster() {
+  ggraph = new Graph()
+  idvec.mark(ggraph, timevec, "|")
+}
+
+proc myrun() {
+  run()
+  plotraster()
+}
+
+/* old paragraph
+dend9[41] Cortexsource = new NetStim(0.5)
+Cortexsource.interval=1 // =1000/f, f is the mean frequency of activation in Hz
+Cortexsource.number=10 
+Cortexsource.start=100
+Cortexsource.noise=1
+
+dend9[41] Esynapse = new ExpSyn(0.5)
+Esynapse.tau=3
+Esynapse.e=0
+thresh=10
+delay=0.0
+Eweight=1
+
+syncortical.append(new NetCon(Cortexsource, Esynapse, thresh, delay, Eweight))
+//conn=new NetCon(Cortexsource, Esynapse, thresh, delay, Eweight)
+
+//conn.record(Cortexsource)
+//spikes.append(vec)
+
+old paragraph */
+
+//----------------------------------------------------------------------------
+// interneuron
+//----------------------------------------------------------------------------
+load_file("INmodel.hoc")
+
+//----------------------------------------------------------------------------
+// inter -> relay GABA_A //now the data on weight is needed
+//----------------------------------------------------------------------------
+
+objectvar syn2interneuron
+syn2interneuron = new List()
+
+objectvar synj
+dend4[0] synj=new GABAa(0.5) //relay GABA_A
+dend[32] syn2interneuron.append( new NetCon(&dend[32].v(0.5), synj, -50, 2, 0.18) )
+
+//32, 87
+
+//----------------------------------------------------------------------------
+// retina -> inter AMPA 
+//----------------------------------------------------------------------------
+
+objectvar syni // won't be any different if using objref
+dend[32] syni = new AMPA(0.5)
+
+Prethresh_AMPA = 0 // (mV) voltage level nec for release
+
+retinal_axon syn2retinal_axon.append( new NetCon(&v(0.5), syni, Prethresh_AMPA, 0, 0.17) )
+
+//----------------------------------------------------------------------------
+// transient time
+//----------------------------------------------------------------------------
+trans = 00
+
+print " "
+print ">> Transient time of ",trans," ms"
+print " "
+
+//----------------------------------------------------------------------------
+// setup simulation parameters
+//----------------------------------------------------------------------------
+Dt = 0.2
+npoints = 12500
+
+dt = 0.1			// must be submultiple of Dt
+tstart = trans
+tstop = trans + npoints * Dt
+runStopAt = tstop
+steps_per_ms = 1/Dt
+
+celsius = 34			// temperature of John's experiments
+
+v_init = -74			// approximate resting Vm
+
+//----------------------------------------------------------------------------
+// adding graph(s): http://senselab.med.yale.edu/ModelDB/ShowModel.asp?model=18198&file=\SYN_NEW\gabab3.hoc
+//----------------------------------------------------------------------------
+objectvar g[20]         // max 20 graphs
+ngraph = 0
+
+proc addgraph() { local ii  // define subroutine to add a new graph
+                // addgraph("variable", minvalue, maxvalue)
+    ngraph = ngraph+1
+    ii = ngraph-1
+    g[ii] = new Graph()
+    g[ii].size(0,tstop,$2,$3)
+    g[ii].xaxis()
+    g[ii].yaxis()
+    g[ii].addvar($s1,1,0)
+    g[ii].save_name("graphList[0].")
+    graphList[0].append(g[ii])
+}
+
+addgraph("v(0.5)",-80,40)
+g.addvar("soma_inter.v(0.5)", 2, 0.1) //red
+g.addvar("retinal_axon.v(0.5)",3,0.1) //blue
+g.addvar("soma.v(0.5)",4,0.1) //green
+
+
+//addgraph("soma_inter.v(0.5)",-80,40)
+//addgraph("dend[32].v(0.5)",-80,40)
+addgraph("retinal_axon.v(0.5)", -80,40)
+addgraph("soma.v(0.5)",-80,40)
+//addgraph("dend4[0].v(0.5)",-80,40)
+//addgraph("dend9[10].v(0.5)",-80,40)
+addgraph("dend4[18].v(0.5)",-80,40)
+addgraph("dend8[20].v(0.5)",-80,40)
+
+//----------------------------------------------------------------------------
+// save data
+//----------------------------------------------------------------------------
+objref recv, rect, savspike, cortexr
+rect = new Vector()
+recv = new Vector()
+cortexr=new Vector()
+rect.record(&t)
+recv.record(&soma.v(0.5))//recording from relay cell
+
+run()
+//myrun()
+
+savspike= new File()
+savspike.wopen("/Users/jiemei/Desktop/combined_v2/trial_updated/results/result_may24_relay[99]/gaba/csr4/csr4_010.dat")
+timestep=0 
+timestepi=0
+total=0 
+totali=0
+printf("relay cell")
+
+for i=0 && total=0, rect.size()-1 {
+    if (recv.x[i] >= -15 && timestep + 1 < rect.x(i)){
+	timestep=rect.x(i)
+	total=total+1
+	printf("%g\n", total)
+	printf("%g\n", timestep)
+	savspike.printf("%g\n", timestep)
+}
+}
+
+
+savspike.close()
+

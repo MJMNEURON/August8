@@ -1,0 +1,323 @@
+
+load_file("nrngui.hoc")
+
+
+//----------------------------------------------------------------------------
+// retinal axon
+//----------------------------------------------------------------------------
+create retinal_axon
+//tc200_cc.oc
+retinal_axon {
+	insert pas
+	g_pas = 3.79e-5
+	e_pas = -76.5		// to fit current-clamp data (was -71 to -73)
+	cm = 0.88
+	Ra = 173
+
+	insert hh2		// insert fast spikes
+	ena = 50
+	ek = -100
+	vtraub_hh2 = -52
+	gnabar_hh2 = 0.01		// adapted to single-compartment
+	gkbar_hh2 = 0.01 		// adapted to single-compartment
+
+	insert itGHK		// T-current everywhere
+	cai = 2.4e-4 
+	cao = 2 
+	eca = 120 
+	shift_itGHK = -1	// screening charge shift + 3 mV error
+	gcabar_itGHK = 0.0002
+	pcabar_itGHK = 8e-5
+	qm_itGHK = 2.5
+	qh_itGHK = 2.5
+	
+	insert cad		// calcium diffusion everywhere
+	depth_cad = 0.1
+	kt_cad = 0		// no pump
+	kd_cad = 1e-4
+	taur_cad = 5
+	cainf_cad = 2.4e-4	
+}
+
+//----------------------------------------------------------------------------
+// relay cell topology
+//----------------------------------------------------------------------------
+xopen("cells/tc200.geo") // read geometry file
+xopen("loc200.oc") // load procedures for localizing T-current
+
+corrD = 1 // no dendritic surface correction
+G_pas = 3.79e-5
+E_pas = -73 // to fit current-clamp data (was -71 to -73)
+E_pas = -76.5 // within 3 mV error
+
+forall { // insert passive current everywhere
+insert pas
+g_pas = G_pas * corrD
+e_pas = E_pas
+cm = 0.88 * corrD
+Ra = 173
+L = L
+}
+
+soma {
+g_pas = G_pas
+cm = 0.88
+
+insert hh2 // insert fast spikes
+ena = 50
+ek = -100
+vtraub_hh2 = -52
+gnabar_hh2 = 0.1
+gkbar_hh2 = 0.1
+}
+
+
+forall {
+insert itGHK // T-current everywhere
+cai = 2.4e-4
+cao = 2
+eca = 120
+shift_itGHK = -1 // screening charge shift + 3 mV error
+gcabar_itGHK = corrD * 0.0002
+qm_itGHK = 2.5
+qh_itGHK = 2.5
+
+insert cad // calcium diffusion everywhere
+depth_cad = 0.1 * corrD
+kt_cad = 0 // no pump
+kd_cad = 1e-4
+taur_cad = 5
+cainf_cad = 2.4e-4
+}
+
+//xopen("loc200.oc") // load procedures for localizing T-current
+
+// uniform T-current with same density as in dissociated cells
+// localize(1.7e-5,corrD*1.7e-5,corrD*1.7e-5)
+
+// low density proximal, high distal, to match volt-clamp of intact cells
+localize(1.7e-5,corrD*8.5e-5,corrD*8.5e-5)
+
+
+objectvar rstim // insert current injection
+
+retinal_axon rstim = new IClamp(.5)
+rstim.del = 0
+rstim.dur = 1e9 // dur has to be infinite when used with vector playing 
+rstim.amp = 0
+
+objref fspikes, vecspikes, vecstim
+fspikes=new File()
+fspikes.ropen("contrast/cs100_10.dat")
+vecspikes=new Vector()
+vecstim = new Vector(1000,0)
+vecspikes.scanf(fspikes)
+for total=0, vecspikes.size()-1{
+    vecstim.x( int(vecspikes.x(total)*1000) ) = 1000
+}
+vecspikes.printf()
+vecstim.play( &rstim.amp, 1 )
+
+// Definition of the list of NetCon objects representing synapses to the retinal axon
+objectvar syn2retinal_axon
+syn2retinal_axon = new List()
+
+//----------------------------------------------------------------------------
+// relay cell
+//----------------------------------------------------------------------------
+/*
+load_file("relay.nrn")
+objectvar relay
+relay = new RelayCell()
+*/
+//----------------------------------------------------------------------------
+// retina -> relay AMPA 
+//----------------------------------------------------------------------------
+objectvar syn // won't be any different if using objref
+dend4[0] syn = new AMPA(0.5)
+
+// Cmax_AMPA = 1 // (mM) max transmitter concentration
+// Cdur_AMPA = 1 // (ms) transmitter duration (rising phase)
+// Alpha_AMPA = 1.1 // (/ms mM) forward (binding) rate
+// Beta_AMPA = 0.19 // (/ms) backward (unbinding) rate
+// Erev_AMPA = 0 // (mV) reversal potential
+Prethresh_AMPA = 0 // (mV) voltage level nec for release
+// Deadtime_AMPA = 1 // (ms) mimimum time between release events
+// syn.gmax = 0.0001 // (umho) maximum conductanc
+
+retinal_axon syn2retinal_axon.append( new NetCon(&v(0.5), syn, Prethresh_AMPA, 0, 0.22) )
+
+//----------------------------------------------------------------------------
+// interneuron
+//----------------------------------------------------------------------------
+load_file("INmodel.hoc")
+
+//----------------------------------------------------------------------------
+// inter -> relay GABA_A //now the data on weight is needed
+// We can implement this by having a GABAa synaptic point process in the relay cell monitoring 
+// the Vm (or other levels, like Ca) of interneuron dendrite receiving from retina. Based on 
+// that level we will set a threshold after which the synapse is activated and the relay cell is inhibited.
+//----------------------------------------------------------------------------
+
+objectvar syn2interneuron
+syn2interneuron = new List()
+
+objectvar synj
+dend4[0] synj=new GABAa(0.5) //relay GABA_A
+//dend4[0] synj.loc(0.5) // assign postsynaptic compartment
+//setpointer synj.pre, dend[104].v(0.5) // assign presynaptic compartment
+dend[104] syn2interneuron.append( new NetCon(&dend[104].v(0.5), synj, -50, 2, 0.13) )
+/*
+Cmax_AMPA = 1 // (mM) max transmitter concentration
+Cdur_AMPA = 1 // (ms) transmitter duration (rising phase)
+Alpha_AMPA = 1.1 // (/ms mM) forward (binding) rate
+Beta_AMPA = 0.19 // (/ms) backward (unbinding) rate
+Erev_AMPA = 0 // (mV) reversal potential
+Prethresh_AMPA = 0 // (mV) voltage level nec for release
+Deadtime_AMPA = 1 // (ms) mimimum time between release events
+syn.g = 0.0001 // (umho) maximum conductanc
+
+
+objref netcon_ir
+netcon_ir = new NetCon(&v(0.5), synj)
+netcon_ir.weight = 0.04
+
+objref fih
+fih = new FInitializeHandler("loadqueue()")
+proc loadqueue() {
+for ii=0, vecstim.size()-1 {netcon_ir.event(vecstim.x[ii])
+}
+}
+*/
+
+
+//----------------------------------------------------------------------------
+// relay cell
+//----------------------------------------------------------------------------
+/*
+load_file("relay.nrn")
+objectvar relay
+relay = new RelayCell()
+*/
+
+//----------------------------------------------------------------------------
+// retina -> inter AMPA 
+//----------------------------------------------------------------------------
+objectvar syni // won't be any different if using objref
+dend[104] syni = new AMPA(0.5)
+
+// Cmax_AMPA = 1 // (mM) max transmitter concentration
+// Cdur_AMPA = 1 // (ms) transmitter duration (rising phase)
+// Alpha_AMPA = 1.1 // (/ms mM) forward (binding) rate
+// Beta_AMPA = 0.19 // (/ms) backward (unbinding) rate
+// Erev_AMPA = 0 // (mV) reversal potential
+Prethresh_AMPA = 0 // (mV) voltage level nec for release
+// Deadtime_AMPA = 1 // (ms) mimimum time between release events
+// syn.gmax = 0.0001 // (umho) maximum conductance
+
+retinal_axon syn2retinal_axon.append( new NetCon(&v(0.5), syni, Prethresh_AMPA, 0, 0.16) )
+
+//----------------------------------------------------------------------------
+// transient time
+//----------------------------------------------------------------------------
+trans = 00
+
+print " "
+print ">> Transient time of ",trans," ms"
+print " "
+
+//----------------------------------------------------------------------------
+// setup simulation parameters
+//----------------------------------------------------------------------------
+Dt = 0.2
+npoints = 4000
+
+dt = 0.1			// must be submultiple of Dt
+tstart = trans
+tstop = trans + npoints * Dt
+runStopAt = tstop
+steps_per_ms = 1/Dt
+
+celsius = 34			// temperature of John's experiments
+
+v_init = -74			// approximate resting Vm
+
+//----------------------------------------------------------------------------
+// adding graph(s): http://senselab.med.yale.edu/ModelDB/ShowModel.asp?model=18198&file=\SYN_NEW\gabab3.hoc
+//----------------------------------------------------------------------------
+objectvar g[20]         // max 20 graphs
+ngraph = 0
+
+proc addgraph() { local ii  // define subroutine to add a new graph
+                // addgraph("variable", minvalue, maxvalue)
+    ngraph = ngraph+1
+    ii = ngraph-1
+    g[ii] = new Graph()
+    g[ii].size(0,tstop,$2,$3)
+    g[ii].xaxis()
+    g[ii].yaxis()
+    g[ii].addvar($s1,1,0)
+    g[ii].save_name("graphList[0].")
+    graphList[0].append(g[ii])
+}
+
+addgraph("v(0.5)",-80,40)
+g.addvar("soma_inter.v(0.5)", 2, 2) //red
+g.addvar("retinal_axon.v(0.5)",3,0.1) //blue
+g.addvar("soma.v(0.5)",4,1.5) //green
+
+
+addgraph("soma_inter.v(0.5)",-80,40)
+addgraph("retinal_axon.v(0.5)", -80,40)
+addgraph("soma.v(0.5)",-80,40)
+
+//----------------------------------------------------------------------------
+// save data
+//----------------------------------------------------------------------------
+objref recv, rect, savspike, recvi, recti, savispike
+rect = new Vector()
+recv = new Vector()
+recti = new Vector()
+recvi = new Vector()
+rect.record(&t)
+recti.record(&t)
+//recv.record(&retinal_axon.v(0.5))
+recv.record(&soma.v(0.5))//recording from relay cell
+recvi.record(&soma_inter.v(0.5))
+run()
+//rect.printf()
+savspike= new File()
+savspike.wopen("result_apr30_relay_gaba/csr4/csr4_010.dat")
+savispike= new File()
+savispike.wopen("result_apr30_inter_gaba/csr4/csr4_010.dat")
+//rect.printf()
+timestep=0 
+timestepi=0
+total=0 
+totali=0
+printf("relay cell")
+for i=0 && total=0, rect.size()-1 {
+    if (recv.x[i] >= -15 && timestep + 1 < rect.x(i)){
+	timestep=rect.x(i)
+	total=total+1
+	printf("%g\n", total)
+	printf("%g\n", timestep)
+	savspike.printf("%g\n", timestep)
+	//savspike.printf("%g \t %g\n", rect.x(i), recv.x(i))
+}
+}
+printf("\n")
+printf("interneuron")
+for i=0 && totali=0, recti.size()-1 {
+    if (recvi.x[i] >= -15 && timestepi + 1 < recti.x(i)){
+	timestepi=recti.x(i)
+	totali=totali+1
+	printf("%g\n", totali)
+	printf("%g\n", timestepi)
+	savispike.printf("%g\n", timestepi)
+	//savspike.printf("%g \t %g\n", rect.x(i), recv.x(i))
+}
+}
+
+savspike.close()
+savispike.close()

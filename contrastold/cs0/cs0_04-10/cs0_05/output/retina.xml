@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<retina-description-file>
+  <retina input-luminosity-range="255" pixels-per-degree="2" temporal-step__sec="0.005">
+    <outer-plexiform-layer>
+      <undershoot-version center-sigma__deg="0.88" center-tau__sec="0.01" opl-amplification="10" opl-relative-weight="1" surround-sigma__deg="2.35" surround-tau__sec="0.01" undershoot-relative-weight="0.5" undershoot-tau__sec="0.2" center-n__uint="0" leaky-heat-equation="1"/>
+    </outer-plexiform-layer>
+    <contrast-gain-control adaptation-feedback-amplification__Hz="100" adaptation-sigma__deg="2.5" adaptation-tau__sec="0.01" bipolar-inert-leaks__Hz="5" opl-amplification__Hz="150"/>
+    <ganglion-layer bipolar-amplification__Hz="100" bipolar-linear-threshold="0" sigma-pool__deg="0" sign="1" transient-relative-weight="0.7" transient-tau__sec="0.03" value-at-linear-threshold__Hz="80">
+      <spiking-channel>
+        <circular-spiking-channel E-adap="0" delta-g-adap__Hz="0" diameter__deg="1" fovea-density__inv-deg="1" g-leak__Hz="50" refr-mean__sec="0.003" refr-stdev__sec="0.001" sigma-V="0.1" tau-g-adap__sec="0" random-init="1">
+          <all-units>
+            <unit x-offset="-0" y-offset="-0" mvaspike-id="0"/>
+          </all-units>
+        </circular-spiking-channel>
+      </spiking-channel>
+    </ganglion-layer>
+  </retina>
+</retina-description-file>

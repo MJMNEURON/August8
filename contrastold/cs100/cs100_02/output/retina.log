@@ -1,0 +1,231 @@
+The Retina command with relatives paths (to be launched from root folder of your archive) is :
+Retina -ret /fkb/serverDirectory/retina/demo/retina_config/EXAMPLE_cat_X_cell.xml -outD cs100_02/output -nodisp -i sequences/contrast_sensitivity_100.seq -r 1
+the command launched is this one : 
+/home/awohrer/Ogygie/Softwares/VirtualRetina/local/bin/Retina -ret /fkb/serverDirectory/retina/demo/retina_config/EXAMPLE_cat_X_cell.xml -outD cs100_02/output -nodisp -i /fkb/serverDirectory/retina/session/9E4E99919D6783D2AAB709B990136149.tomcat1/sequences/contrast_sensitivity_100.seq -r 1
+Hello! This is the retina simulation program!
+Input is the list of 2-dimensional images, starting at sequences/contrast_sensitivity_100-000000.png and finishing at sequences/contrast_sensitivity_100-000099.png.
+Given your chosen eye movements and/or imposed center of fixation,this program will feed the retina with cropped images of dimension (157,156).
+
+The retina is currently allocating all its elements!
+Size of its maps was fixed at: (52,52).
+Initialization of the retina (OPL only) by a uniform screen of luminance 127.5.
+
+(1) OUTER PLEXIFORM LAYER:
+Allocating values for the linear version UndershootOPL.
+Low-pass filter for each layer of cells is a non-separable leaky heat equation.
+Allocating values for the LINEAR version LinearOPL.
+Low-pass filter for each layer of cells is a non-separable leaky heat equation.
+
+(2) CONTRAST GAIN CONTROL MECHANISM:
+Allocating values for a conductance-based contrast-gain-control.
+
+(3) SPIKING LAYERS OF GANGLION CELLS:
+1 layers of ganglion cells were defined, amongst which 1 are spiking channels, for a total of 1 spiking ganglion cells.
+Retina data, including position of units, has been saved as : cs100_02/output/retina.xml
+
+Retina will now be tested on 100 frames of the input sequence, each frame lasting 0.00500000 theoretical seconds.
+Frame 0
+Simulation at time 0.00000 seconds.
+Frame 1
+Simulation at time 0.00500000 seconds.
+Frame 2
+Simulation at time 0.0100000 seconds.
+Frame 3
+Simulation at time 0.0150000 seconds.
+Frame 4
+Simulation at time 0.0200000 seconds.
+Frame 5
+Simulation at time 0.0250000 seconds.
+Frame 6
+Simulation at time 0.0300000 seconds.
+Frame 7
+Simulation at time 0.0350000 seconds.
+Frame 8
+Simulation at time 0.0400000 seconds.
+Frame 9
+Simulation at time 0.0450000 seconds.
+Frame 10
+Simulation at time 0.0500000 seconds.
+Frame 11
+Simulation at time 0.0550000 seconds.
+Frame 12
+Simulation at time 0.0600000 seconds.
+Frame 13
+Simulation at time 0.0650000 seconds.
+Frame 14
+Simulation at time 0.0700000 seconds.
+Frame 15
+Simulation at time 0.0750000 seconds.
+Frame 16
+Simulation at time 0.0800000 seconds.
+Frame 17
+Simulation at time 0.0850000 seconds.
+Frame 18
+Simulation at time 0.0900000 seconds.
+Frame 19
+Simulation at time 0.0950000 seconds.
+Frame 20
+Simulation at time 0.100000 seconds.
+Frame 21
+Simulation at time 0.105000 seconds.
+Frame 22
+Simulation at time 0.110000 seconds.
+Frame 23
+Simulation at time 0.115000 seconds.
+Frame 24
+Simulation at time 0.120000 seconds.
+Frame 25
+Simulation at time 0.125000 seconds.
+Frame 26
+Simulation at time 0.130000 seconds.
+Frame 27
+Simulation at time 0.135000 seconds.
+Frame 28
+Simulation at time 0.140000 seconds.
+Frame 29
+Simulation at time 0.145000 seconds.
+Frame 30
+Simulation at time 0.150000 seconds.
+Frame 31
+Simulation at time 0.155000 seconds.
+Frame 32
+Simulation at time 0.160000 seconds.
+Frame 33
+Simulation at time 0.165000 seconds.
+Frame 34
+Simulation at time 0.170000 seconds.
+Frame 35
+Simulation at time 0.175000 seconds.
+Frame 36
+Simulation at time 0.180000 seconds.
+Frame 37
+Simulation at time 0.185000 seconds.
+Frame 38
+Simulation at time 0.190000 seconds.
+Frame 39
+Simulation at time 0.195000 seconds.
+Frame 40
+Simulation at time 0.200000 seconds.
+Frame 41
+Simulation at time 0.205000 seconds.
+Frame 42
+Simulation at time 0.210000 seconds.
+Frame 43
+Simulation at time 0.215000 seconds.
+Frame 44
+Simulation at time 0.220000 seconds.
+Frame 45
+Simulation at time 0.225000 seconds.
+Frame 46
+Simulation at time 0.230000 seconds.
+Frame 47
+Simulation at time 0.235000 seconds.
+Frame 48
+Simulation at time 0.240000 seconds.
+Frame 49
+Simulation at time 0.245000 seconds.
+Frame 50
+Simulation at time 0.250000 seconds.
+Frame 51
+Simulation at time 0.255000 seconds.
+Frame 52
+Simulation at time 0.260000 seconds.
+Frame 53
+Simulation at time 0.265000 seconds.
+Frame 54
+Simulation at time 0.270000 seconds.
+Frame 55
+Simulation at time 0.275000 seconds.
+Frame 56
+Simulation at time 0.280000 seconds.
+Frame 57
+Simulation at time 0.285000 seconds.
+Frame 58
+Simulation at time 0.290000 seconds.
+Frame 59
+Simulation at time 0.295000 seconds.
+Frame 60
+Simulation at time 0.300000 seconds.
+Frame 61
+Simulation at time 0.305000 seconds.
+Frame 62
+Simulation at time 0.310000 seconds.
+Frame 63
+Simulation at time 0.315000 seconds.
+Frame 64
+Simulation at time 0.320000 seconds.
+Frame 65
+Simulation at time 0.325000 seconds.
+Frame 66
+Simulation at time 0.330000 seconds.
+Frame 67
+Simulation at time 0.335000 seconds.
+Frame 68
+Simulation at time 0.340000 seconds.
+Frame 69
+Simulation at time 0.345000 seconds.
+Frame 70
+Simulation at time 0.350000 seconds.
+Frame 71
+Simulation at time 0.355000 seconds.
+Frame 72
+Simulation at time 0.360000 seconds.
+Frame 73
+Simulation at time 0.365000 seconds.
+Frame 74
+Simulation at time 0.370000 seconds.
+Frame 75
+Simulation at time 0.375000 seconds.
+Frame 76
+Simulation at time 0.380000 seconds.
+Frame 77
+Simulation at time 0.385000 seconds.
+Frame 78
+Simulation at time 0.390000 seconds.
+Frame 79
+Simulation at time 0.395000 seconds.
+Frame 80
+Simulation at time 0.400000 seconds.
+Frame 81
+Simulation at time 0.405000 seconds.
+Frame 82
+Simulation at time 0.410000 seconds.
+Frame 83
+Simulation at time 0.415000 seconds.
+Frame 84
+Simulation at time 0.420000 seconds.
+Frame 85
+Simulation at time 0.425000 seconds.
+Frame 86
+Simulation at time 0.430000 seconds.
+Frame 87
+Simulation at time 0.435000 seconds.
+Frame 88
+Simulation at time 0.440000 seconds.
+Frame 89
+Simulation at time 0.445000 seconds.
+Frame 90
+Simulation at time 0.450000 seconds.
+Frame 91
+Simulation at time 0.455000 seconds.
+Frame 92
+Simulation at time 0.460000 seconds.
+Frame 93
+Simulation at time 0.465000 seconds.
+Frame 94
+Simulation at time 0.470000 seconds.
+Frame 95
+Simulation at time 0.475000 seconds.
+Frame 96
+Simulation at time 0.480000 seconds.
+Frame 97
+Simulation at time 0.485000 seconds.
+Frame 98
+Simulation at time 0.490000 seconds.
+Frame 99
+Simulation at time 0.495000 seconds.
+
+Simulation completed !
+there have been 0 seconds of linear calculations, and 0 seconds of network calculations. 
+Saving spikes to ASCII format, as cs100_02/output/spikes.spk
+The main data file for this simulation is : cs100_02/output/simulation.txt
