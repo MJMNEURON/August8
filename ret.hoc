@@ -1,0 +1,63 @@
+begintemplate reticular
+public soma_re
+//----------------------------------------------------------------------------
+// reticular cell topology
+//----------------------------------------------------------------------------
+
+load_file("cells/re80.geo")	
+
+corrD = 1			// dendritic surface correction
+proc init(){
+	forall { 			// insert passive current everywhere
+		insert pas
+		g_pas = 5e-5 * corrD	// (from simfit)
+	//	e_pas = -72.843		// (from simfit)
+		e_pas = -82		// corrected for liquid junction potential
+		cm = 1 * corrD		// (from simfit)
+		Ra = 260		// (from simfit)
+		L = L
+	}
+
+	soma_re {
+		g_pas = 5e-5		// (from simfit)
+		cm = 1			// (from simfit)
+
+		insert hh2		// insert fast spikes
+		ena = 50
+		ek = -100
+		vtraub_hh2 = -67	// threshold for spikes is low
+		gnabar_hh2 = 0.1
+		gkbar_hh2 = 0.08
+
+	}
+
+
+	forall {
+		insert itGHK		// T-current everywhere
+		cai = 2.4e-4 
+		cao = 2 
+		eca = 120 
+		shift_itGHK = 0		// no shift of ITs
+		gcabar_itGHK = corrD * 0.0002
+		qm_itGHK = 2.5		// low q10
+		qh_itGHK = 2.5
+
+		insert cad		// calcium diffusion everywhere
+		depth_cad = corrD	// NEED TO BE RESCALED
+		kt_cad = 0		// no pump
+		kd_cad = 1e-4
+		taur_cad = 5
+		cainf_cad = 2.4e-4	
+	}
+}
+xopen("loc80.oc")
+localize(4.5e-5, 4.5e-5, 6e-4) 	// initial distribution of T-current
+
+
+
+xopen("leak.oc")	// load dc current injection
+
+access soma_re
+add_dc(0.1)		// set 0.1 nA dc current to adjust to -65 mV
+
+endtemplate reticular

@@ -1,0 +1,69 @@
+/*----------------------------------------------------------------------
+
+  Procedure for localizing T-current in distal dend_rerites
+
+	- Reconstructed thalamic RE cell with 80 compartments (re80)
+	- currents must be localized everywhere
+
+	first parameter: somatic and proximal dend_reritic conductance
+	secnd parameter: medial dend_reritic conductance
+	third parameter: distal dend_reritic conductance
+
+----------------------------------------------------------------------*/
+
+proc localize() {
+
+	/* CHANGE ALL : */
+		printf("%g\n", $1)
+		printf("%g\n", $2)
+		printf("%g\n", $3)
+
+		forall { pcabar_itGHK = $3 }
+
+
+
+	/* CHANGE SOMA : */
+
+		soma_re.pcabar_itGHK = $1
+
+
+	/* CHANGE PROXIMAL SEGMENTS : */
+
+		dend_re1[0].pcabar_itGHK = $1
+		dend_re1[1].pcabar_itGHK = $1
+		dend_re1[2].pcabar_itGHK = $1
+		dend_re1[22].pcabar_itGHK = $1
+
+		dend_re2[0].pcabar_itGHK = $1
+
+		dend_re3[0].pcabar_itGHK = $1
+
+		dend_re4[0].pcabar_itGHK = $1
+
+
+
+	/* CHANGE MEDIAL SEGMENTS : */
+
+		dend_re1[3].pcabar_itGHK = $2
+		dend_re1[16].pcabar_itGHK = $2
+		dend_re1[17].pcabar_itGHK = $2
+		dend_re1[18].pcabar_itGHK = $2
+		dend_re1[19].pcabar_itGHK = $2
+		dend_re1[23].pcabar_itGHK = $2
+		dend_re1[34].pcabar_itGHK = $2
+
+		dend_re2[1].pcabar_itGHK = $2
+		dend_re2[4].pcabar_itGHK = $2
+
+		dend_re3[1].pcabar_itGHK = $2
+		dend_re3[10].pcabar_itGHK = $2
+
+		dend_re4[1].pcabar_itGHK = $2
+		dend_re4[2].pcabar_itGHK = $2
+
+
+
+}
+
+
+
