@@ -290,6 +290,7 @@ objectvar synretrel
 synretrel = new List()
 
 objectvar syndis
+<<<<<<< HEAD:Aug4.hoc
 //dend6[6] syndis = new GABAa(0.5)
 //dend_re1[12] synretrel.append (new NetCon(&dend_re1[12].v(0.5), syndis, 0, 2, 0.2))
 
@@ -308,6 +309,10 @@ objectvar syndisinv
 
 dend_re2[4] syndisinv = new GABAa(0.5) //2[4] proximal, 34.5466
 dend6[2] synretrel.append (new NetCon(&dend6[2].v(0.5), syndisinv, 0, 2, 0.1))
+=======
+dend6[6] syndis = new GABAa(0.5)
+dend_re1[12] synretrel.append (new NetCon(&dend_re1[12].v(0.5), syndis, -50, 2, 0.1))
+>>>>>>> FETCH_HEAD:Aug4.hoc
 
 
 
