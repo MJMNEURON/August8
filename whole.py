@@ -1,3 +1,13 @@
+#######################################################################################################################################
+###this script:
+###1. takes two arguments (python whole.py LITERATURE-NAME: e.g., python whole.py Bal)
+###2. write parameters from a .txt file into the base .hoc file
+###3. create the directories (which includes spiking files for cell types) based on the literature from which the parameters are taken
+###4. iterate through 40 trials at 4 different contrast levels, 10 trials/contrast level
+###5. save result data file to correspondent directories
+###6. average over trials and give the result
+#######################################################################################################################################
+
 from sys import argv
 import re
 import string
